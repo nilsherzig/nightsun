@@ -1,23 +1,23 @@
 modules:
   - name: zoxide
-    description: A fast alternative to cd that learns your habits
+    desc: A fast alternative to cd that learns your habits
     producer: zoxide query --list
     consumer:
       - switch_workspace 0
       - tmux new-window -c "$path"
 
   - name: switch_workspace_i3
-    description: Switch to a workspace by name in i3
+    desc: Switch to a workspace by name in i3
     producer: i3-msg -t get_workspaces | jq -r '.[].name'
     consumer:
       - i3-msg workspace "$1"
 
   - name: switch_workspace_hyprland
-    description: Switch to a workspace by name in hyprland
+    desc: Switch to a workspace by name in hyprland
     producer: hyprland workspace list
     consumer:
       - hyprland workspace switch "$1"
 
   - name: switch_workspace
-    description: Switch to a workspace by name
+    desc: Switch to a workspace by name
     alias: switch_workspace_i3
