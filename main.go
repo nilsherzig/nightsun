@@ -35,7 +35,7 @@ func main() {
 			for _, line := range lines {
 				items = append(items, Item{
 					Module: module,
-					Line:   line,
+					Line:   strings.ReplaceAll(line, "\t", "    "),
 				})
 			}
 		}
