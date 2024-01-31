@@ -14,9 +14,9 @@ modules:
 
   - name: switch_workspace_hyprland
     desc: Switch to a workspace by name in hyprland
-    producer: hyprland workspace list
+    producer: hyprctl workspaces -j | jq '.[].id'
     consumer:
-      - hyprland workspace switch "$1"
+      - hyprland dispatch workspace "$1"
 
   - name: switch_workspace
     desc: Switch to a workspace by name
