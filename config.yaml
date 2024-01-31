@@ -36,7 +36,12 @@ modules:
 
   # window focus by title
   - name: focus_window_title_i3
+    prefix: "i3 window "
     desc: Focus a window by title in i3
+    producer: |
+      wmctrl -l \
+      | sed -E 's|\s+| |g' \
+      | cut -d " " -f 4-
     consumer: |
       wmctrl -a "$sel"
 
