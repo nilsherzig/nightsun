@@ -47,9 +47,10 @@ modules:
 
   - name: focus_window_title_hyprland
     desc: Focus a window by title in hyprland
+    producer: hyprctl clients -j | jq '.[].title' | sed 's;";;g'
     consumer: |
-      hyprland dispatch focuswindow title:"$sel"
+      hyprctl dispatch focuswindow title:"$sel"
 
   - name: focus_window_title
     desc: Focus a window by title
-    alias: focus_window_title_i3
+    alias: focus_window_title_hyprland
