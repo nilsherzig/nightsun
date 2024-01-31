@@ -12,8 +12,8 @@ modules:
     prefix: "browser tab "
     producer: brotab list
     consumer:
-      - cmd: brotab activate "$1"
-      - mod: window_focus_title "$2"
+      - cmd: brotab activate "$(awk '{print $1}' <<< "$1")"
+      - cmd: wmctrl -a "$(awk '{print $2}' <<< "$1")"
 
   # workspace switching
   - name: switch_workspace_i3
@@ -34,6 +34,11 @@ modules:
     alias: switch_workspace_i3
 
   # window focus by title
+  - name: focus_window_title_i3
+    desc: Focus a window by title in i3
+    consumer:
+      - cmd: echo todo
+
   - name: focus_window_title_hyprland
     desc: Focus a window by title in hyprland
     consumer:
@@ -41,4 +46,4 @@ modules:
 
   - name: focus_window_title
     desc: Focus a window by title
-    alias: focus_window_title_hyprland
+    alias: focus_window_title_i3

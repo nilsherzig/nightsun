@@ -15,6 +15,7 @@
             brotab
             gopls
             goreleaser
+            wmctrl
           ];
         };
       });
