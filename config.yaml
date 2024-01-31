@@ -13,6 +13,7 @@ modules:
     producer: brotab list
     consumer:
       - brotab activate "$1"
+      - window_focus_title "$2"
 
   # workspace switching
   - name: switch_workspace_i3
