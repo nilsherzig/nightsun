@@ -31,7 +31,6 @@ func main() {
 			}
 
 			lines := strings.Split(trimmed, "\n")
-			log.Print(len(lines))
 			for _, line := range lines {
 				items = append(items, Item{
 					Module: module,
@@ -58,7 +57,7 @@ func main() {
 	}
 
 	item := items[idx]
-	for _, cmd := range item.Module.Consumer {
-		log.Print(cmd)
+	if err := item.Module.Exec(&config, item.Line); err != nil {
+		log.Fatal(err)
 	}
 }

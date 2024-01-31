@@ -4,16 +4,16 @@ modules:
     desc: A fast alternative to cd that learns your habits
     producer: zoxide query --list
     consumer:
-      - switch_workspace 0
-      - tmux new-window -c "$1"
+      - mod: switch_workspace 0
+      - cmd: tmux new-window -c "$1"
 
   - name: brotab
     desc: A CLI tool to interact with the browser tabs
     prefix: "browser tab "
     producer: brotab list
     consumer:
-      - brotab activate "$1"
-      - window_focus_title "$2"
+      - cmd: brotab activate "$1"
+      - mod: window_focus_title "$2"
 
   # workspace switching
   - name: switch_workspace_i3
@@ -21,13 +21,13 @@ modules:
     prefix: "i3 workspace "
     producer: i3-msg -t get_workspaces | jq -r '.[].name'
     consumer:
-      - i3-msg workspace "$1"
+      - cmd: i3-msg workspace "$1"
 
   - name: switch_workspace_hyprland
     desc: Switch to a workspace by name in hyprland
     producer: hyprctl workspaces -j | jq '.[].id'
     consumer:
-      - hyprland dispatch workspace "$1"
+      - cmd: hyprland dispatch workspace "$1"
 
   - name: switch_workspace
     desc: Switch to a workspace by name
@@ -37,7 +37,7 @@ modules:
   - name: focus_window_title_hyprland
     desc: Focus a window by title in hyprland
     consumer:
-      - hyprland dispatch focuswindow title:"$1"
+      - cmd: hyprland dispatch focuswindow title:"$1"
 
   - name: focus_window_title
     desc: Focus a window by title
