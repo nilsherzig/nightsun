@@ -21,7 +21,7 @@ func main() {
 	items := []Item{}
 	for _, module := range config.Modules {
 		if len(module.Producer) > 0 {
-			cmd := exec.Command("bash", "-c", module.Producer)
+			cmd := exec.Command("bash", "-c", "set -euo pipefail;"+module.Producer)
 			out, err := cmd.Output()
 			if err != nil {
 				log.Print(errors.Wrapf(err, "%v: command failed", module.Producer))
