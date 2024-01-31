@@ -1,7 +1,8 @@
 {
   outputs = { self, nixpkgs, flake-utils }:
     flake-utils.lib.eachDefaultSystem (system:
-      let pkgs = import nixpkgs { inherit system; }; in rec {
+      let pkgs = import nixpkgs { inherit system; };
+      in rec {
         defaultPackage = pkgs.buildGoModule {
           pname = "unified-search";
           version = "0";
@@ -11,9 +12,7 @@
 
         devShell = pkgs.mkShell {
           inputsFrom = [ defaultPackage ];
-          packages = with pkgs; [
-            gopls
-          ];
+          packages = with pkgs; [ gopls goreleaser ];
         };
       });
 }
