@@ -2,32 +2,33 @@ modules:
   # clis
   - name: zoxide
     desc: A fast alternative to cd that learns your habits
-    producer: sleep 1; zoxide query --list
-    consumer:
-      - mod: switch_workspace 0
-      - cmd: tmux new-window -c "$1"
+    producer: zoxide query --list
+    consumer: |
+      sel=0 switch_workspace
+      tmux new-window -c "$sel"
 
   - name: brotab
     desc: A CLI tool to interact with the browser tabs
     prefix: "browser tab "
     producer: brotab list
-    consumer:
-      - cmd: brotab activate "$(awk '{print $1}' <<< "$1")"
-      - cmd: wmctrl -a "$(awk '{print $2}' <<< "$1")"
+    consumer: |
+      IFS=$'\t' read -r id title _ <<< "$sel"
+      command brotab activate "$id"
+      sel="$title" focus_window_title
 
   # workspace switching
   - name: switch_workspace_i3
     desc: Switch to a workspace by name in i3
     prefix: "i3 workspace "
     producer: i3-msg -t get_workspaces | jq -r '.[].name'
-    consumer:
-      - cmd: i3-msg workspace "$1"
+    consumer: |
+      i3-msg workspace "$sel"
 
   - name: switch_workspace_hyprland
     desc: Switch to a workspace by name in hyprland
     producer: hyprctl workspaces -j | jq '.[].id'
-    consumer:
-      - cmd: hyprland dispatch workspace "$1"
+    consumer: |
+      hyprland dispatch workspace "$sel"
 
   - name: switch_workspace
     desc: Switch to a workspace by name
@@ -36,13 +37,13 @@ modules:
   # window focus by title
   - name: focus_window_title_i3
     desc: Focus a window by title in i3
-    consumer:
-      - cmd: echo todo
+    consumer: |
+      wmctrl -a "$sel"
 
   - name: focus_window_title_hyprland
     desc: Focus a window by title in hyprland
-    consumer:
-      - cmd: hyprland dispatch focuswindow title:"$1"
+    consumer: |
+      hyprland dispatch focuswindow title:"$sel"
 
   - name: focus_window_title
     desc: Focus a window by title

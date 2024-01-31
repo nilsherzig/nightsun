@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bytes"
+	"fmt"
 	"io"
 	"log"
 	"os"
@@ -23,10 +25,6 @@ func main() {
 	itemC := make(chan Item)
 	reports := []Report{}
 	reportC := make(chan Report)
-
-	defer func() {
-
-	}()
 
 	// collector
 	go func() {
@@ -117,7 +115,8 @@ func main() {
 			for _, line := range lines {
 				itemC <- Item{
 					Module: module,
-					Line:   strings.ReplaceAll(line, "\t", "    "),
+					Line:   line,
+					Show:   strings.ReplaceAll(line, "\t", "    "),
 				}
 			}
 		}(module)
@@ -144,7 +143,7 @@ func helper(config *Config, items *[]Item) error {
 	idx, err := fuzzyfinder.Find(
 		items,
 		func(i int) string {
-			return (*items)[i].Module.Prefix + (*items)[i].Line
+			return (*items)[i].Module.Prefix + (*items)[i].Show
 		},
 		fuzzyfinder.WithPreviewWindow(func(i, width, height int) string {
 			if i < 0 || i >= len(*items) {
@@ -159,5 +158,20 @@ func helper(config *Config, items *[]Item) error {
 	}
 
 	item := (*items)[idx]
-	return item.Module.Exec(config, item.Line)
+	script := fmt.Sprintf(
+		"set -xeuo pipefail\n%v\n%v\n",
+		config.Modules.MkScript(), item.Module.Name,
+	)
+
+	cmd := exec.Command("bash")
+	cmd.Env = append(os.Environ(), "sel="+item.Line)
+	cmd.Stdin = bytes.NewReader([]byte(script))
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	if err := cmd.Run(); err != nil {
+		return errors.Wrap(err, "could not run command")
+	}
+
+	return nil
 }
