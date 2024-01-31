@@ -5,7 +5,7 @@ modules:
     producer: zoxide query --list
     consumer:
       - switch_workspace 0
-      - tmux new-window -c "$path"
+      - tmux new-window -c "$1"
 
   - name: brotab
     desc: A CLI tool to interact with the browser tabs
@@ -13,7 +13,6 @@ modules:
     producer: brotab list
     consumer:
       - brotab activate "$1"
-      - tmux new-window -c "$path"
 
   # workspace switching
   - name: switch_workspace_i3

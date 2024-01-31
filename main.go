@@ -57,6 +57,8 @@ func main() {
 		log.Fatal(errors.Wrap(err, "selection failed"))
 	}
 
-	log.Print(items[idx].Line)
-	log.Print(items[idx].Module.Show())
+	item := items[idx]
+	for _, cmd := range item.Module.Consumer {
+		log.Print(cmd)
+	}
 }
