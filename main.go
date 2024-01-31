@@ -5,52 +5,12 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/charmbracelet/bubbles/list"
-	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/ktr0731/go-fuzzyfinder"
 	"github.com/pkg/errors"
 )
 
 var docStyle = lipgloss.NewStyle().Margin(1, 2)
-
-type item struct {
-	title, desc string
-}
-
-func (i item) Title() string       { return i.title }
-func (i item) Description() string { return i.desc }
-func (i item) FilterValue() string { return i.title }
-
-type model struct {
-	list list.Model
-}
-
-func (m model) Init() tea.Cmd {
-	return nil
-}
-
-func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	switch msg := msg.(type) {
-	case tea.KeyMsg:
-		if msg.String() == "ctrl+c" {
-			return m, tea.Quit
-		}
-		if msg.String() == "enter" {
-			return m, tea.Quit
-		}
-	case tea.WindowSizeMsg:
-		h, v := docStyle.GetFrameSize()
-		m.list.SetSize(msg.Width-h, msg.Height-v)
-	}
-
-	var cmd tea.Cmd
-	m.list, cmd = m.list.Update(msg)
-	return m, cmd
-}
-
-func (m model) View() string {
-	return docStyle.Render(m.list.View())
-}
 
 func main() {
 	config, err := parseConfig("config.yaml")
@@ -58,7 +18,7 @@ func main() {
 		panic(err)
 	}
 
-	outputs := Outputs{}
+	items := []Item{}
 	for _, module := range config.Modules {
 		if len(module.Producer) > 0 {
 			cmd := exec.Command("bash", "-c", module.Producer)
@@ -68,16 +28,43 @@ func main() {
 				continue
 			}
 
-			outputs = append(outputs, Output{
-				Module: module,
-				Lines:  strings.Split(string(out), "\n"),
-			})
+			lines := strings.Split(strings.TrimSpace(string(out)), "\n")
+			for _, line := range lines {
+				items = append(items, Item{
+					Module: module,
+					Line:   line,
+				})
+			}
 		}
 	}
 
-	log.Printf(
-		"got %v total lines from %v successful commands",
-		len(outputs.Lines()), len(outputs))
+	idx, err := fuzzyfinder.Find(
+		items,
+		func(i int) string {
+			return items[i].Module.Prefix + items[i].Line
+		},
+		fuzzyfinder.WithPreviewWindow(func(i, width, height int) string {
+			if i < 0 || i >= len(items) {
+				return ""
+			}
+			return items[i].Module.Show()
+		}),
+	)
+	if err != nil {
+		log.Fatal(errors.Wrap(err, "selection failed"))
+	}
+
+	log.Print(items[idx].Line)
+	log.Print(items[idx].Module.Show())
+
+	// m := Model{
+	// 	List: list.New(outputs.Items(), ItemDelegate{}, 0, 0),
+	// }
+
+	// p := tea.NewProgram(m)
+	// if _, err := p.Run(); err != nil {
+	// 	log.Fatal(errors.Wrap(err, "failed to start UI"))
+	// }
 
 	// items := []list.Item{}
 	// for _, module := range yamlConfig.Modules {

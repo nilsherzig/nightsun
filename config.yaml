@@ -8,6 +8,7 @@ modules:
 
   - name: switch_workspace_i3
     desc: Switch to a workspace by name in i3
+    prefix: "i3 workspace "
     producer: i3-msg -t get_workspaces | jq -r '.[].name'
     consumer:
       - i3-msg workspace "$1"
