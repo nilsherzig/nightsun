@@ -151,6 +151,7 @@ func helper(config *Config, items *[]Item) error {
 			return (*items)[i].Module.Show()
 		}),
 		fuzzyfinder.WithHotReloadLock(mut.RLocker()),
+		fuzzyfinder.WithHeader(">> May the Nightsun illuminate your path <<"),
 	)
 	if err != nil {
 		log.Fatal(errors.Wrap(err, "selection failed"))

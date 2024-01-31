@@ -1,4 +1,4 @@
-module nilsherzig/unified-search
+module nilsherzig/nightsun
 
 go 1.21.6
 

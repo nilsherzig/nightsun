@@ -3,10 +3,10 @@
     flake-utils.lib.eachDefaultSystem (system:
       let pkgs = import nixpkgs { inherit system; }; in rec {
         defaultPackage = pkgs.buildGoModule {
-          pname = "unified-search";
-          version = "0";
+          pname = "nightsun";
+          version = "1";
           src = ./.;
-          vendorHash = "sha256-U/AuOIC1eYVi+lwjD5jS8lDInqnwOwdlq0X+9bC3R7c=";
+          vendorHash = "sha256-XOchm6hHRvyL9t9GMFjVlGlsFoAo8qPnH5VZnhy28jM=";
         };
 
         devShell = pkgs.mkShell {
