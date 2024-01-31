@@ -1,7 +1,9 @@
 package main
 
 import (
+	"io"
 	"log"
+	"os"
 	"os/exec"
 	"strings"
 	"sync"
@@ -19,6 +21,12 @@ func main() {
 	wg := sync.WaitGroup{}
 	items := []Item{}
 	itemC := make(chan Item)
+	reports := []Report{}
+	reportC := make(chan Report)
+
+	defer func() {
+
+	}()
 
 	// collector
 	go func() {
@@ -30,6 +38,12 @@ func main() {
 				}
 
 				items = append(items, item)
+			case report, ok := <-reportC:
+				if !ok {
+					continue
+				}
+
+				reports = append(reports, report)
 			}
 		}
 	}()
@@ -50,6 +64,32 @@ func main() {
 			defer wg.Done()
 
 			cmd := exec.Command("bash", "-c", "set -euo pipefail;"+module.Producer)
+
+			stderr, err := cmd.StderrPipe()
+			if err != nil {
+				log.Print(errors.Wrapf(err, "%v: could not capture stderr", module.Producer))
+			}
+
+			wg.Add(1)
+			go func() {
+				defer wg.Done()
+
+				stderr, err := io.ReadAll(stderr)
+				if err != nil {
+					log.Print(errors.Wrapf(err, "%v: could not read stderr", module.Producer))
+				}
+
+				error := strings.TrimSpace(string(stderr))
+				if len(error) <= 0 {
+					return
+				}
+
+				reportC <- Report{
+					Command: module.Producer,
+					Error:   error,
+				}
+			}()
+
 			out, err := cmd.Output()
 			if err != nil {
 				log.Print(errors.Wrapf(err, "%v: command failed", module.Producer))
@@ -71,18 +111,34 @@ func main() {
 		}(module)
 	}
 
+	exit := 0
+
+	if err := helper(&config, &items); err != nil {
+		log.Print(err)
+		exit = 1
+	}
+
+	log.Print("Producer error reports:")
+	for _, report := range reports {
+		log.Printf("\t%v: %v", report.Command, report.Error)
+	}
+
+	os.Exit(exit)
+}
+
+func helper(config *Config, items *[]Item) error {
 	var mut sync.RWMutex
 
 	idx, err := fuzzyfinder.Find(
-		&items,
+		items,
 		func(i int) string {
-			return items[i].Module.Prefix + items[i].Line
+			return (*items)[i].Module.Prefix + (*items)[i].Line
 		},
 		fuzzyfinder.WithPreviewWindow(func(i, width, height int) string {
-			if i < 0 || i >= len(items) {
+			if i < 0 || i >= len(*items) {
 				return ""
 			}
-			return items[i].Module.Show()
+			return (*items)[i].Module.Show()
 		}),
 		fuzzyfinder.WithHotReloadLock(mut.RLocker()),
 	)
@@ -90,8 +146,6 @@ func main() {
 		log.Fatal(errors.Wrap(err, "selection failed"))
 	}
 
-	item := items[idx]
-	if err := item.Module.Exec(&config, item.Line); err != nil {
-		log.Fatal(err)
-	}
+	item := (*items)[idx]
+	return item.Module.Exec(config, item.Line)
 }

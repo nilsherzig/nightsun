@@ -10,6 +10,13 @@ import (
 	"github.com/pkg/errors"
 )
 
+type Report struct {
+	Command string
+	Error   string
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 type Consumer struct {
 	IsMod string `yaml:"mod"`
 	IsCmd string `yaml:"cmd"`
