@@ -28,7 +28,13 @@ func main() {
 				continue
 			}
 
-			lines := strings.Split(strings.TrimSpace(string(out)), "\n")
+			trimmed := strings.TrimSpace(string(out))
+			if len(trimmed) <= 0 {
+				continue
+			}
+
+			lines := strings.Split(trimmed, "\n")
+			log.Print(len(lines))
 			for _, line := range lines {
 				items = append(items, Item{
 					Module: module,

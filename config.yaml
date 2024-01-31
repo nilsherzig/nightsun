@@ -9,6 +9,7 @@ modules:
 
   - name: brotab
     desc: A CLI tool to interact with the browser tabs
+    prefix: "browser tab "
     producer: brotab list
     consumer:
       - brotab activate "$1"
