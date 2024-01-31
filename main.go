@@ -63,11 +63,16 @@ func main() {
 		go func(module *Module) {
 			defer wg.Done()
 
-			cmd := exec.Command("bash", "-c", "set -euo pipefail;"+module.Producer)
+			command := module.Producer
+			cmd := exec.Command("bash", "-c", "set -euo pipefail;"+command)
 
 			stderr, err := cmd.StderrPipe()
 			if err != nil {
-				log.Print(errors.Wrapf(err, "%v: could not capture stderr", module.Producer))
+				reportC <- Report{
+					Command: command,
+					Error:   errors.Wrapf(err, "%v: could not capture stderr", module.Producer).Error(),
+				}
+				return
 			}
 
 			wg.Add(1)
@@ -76,7 +81,11 @@ func main() {
 
 				stderr, err := io.ReadAll(stderr)
 				if err != nil {
-					log.Print(errors.Wrapf(err, "%v: could not read stderr", module.Producer))
+					reportC <- Report{
+						Command: command,
+						Error:   errors.Wrapf(err, "%v: could not read stderr", module.Producer).Error(),
+					}
+					return
 				}
 
 				error := strings.TrimSpace(string(stderr))
@@ -85,14 +94,17 @@ func main() {
 				}
 
 				reportC <- Report{
-					Command: module.Producer,
+					Command: command,
 					Error:   error,
 				}
 			}()
 
 			out, err := cmd.Output()
 			if err != nil {
-				log.Print(errors.Wrapf(err, "%v: command failed", module.Producer))
+				reportC <- Report{
+					Command: command,
+					Error:   errors.Wrapf(err, "%v: command failed", module.Producer).Error(),
+				}
 				return
 			}
 
