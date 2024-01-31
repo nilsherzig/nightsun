@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"strings"
 )
 
 type Report struct {
@@ -21,7 +22,21 @@ type Module struct {
 }
 
 func (m *Module) Show() string {
-	return fmt.Sprintf("%v\n%v", m.Name, m.Desc)
+	if len(m.Alias) > 0 {
+		return strings.Join([]string{
+			m.Name,
+			m.Desc,
+			m.Alias,
+		}, "\n")
+	}
+	return strings.Join([]string{
+		m.Name,
+		m.Desc,
+		"== Producer ==",
+		m.Producer,
+		"== Consumer ==",
+		m.Consumer,
+	}, "\n")
 }
 
 func (m *Module) ToFunction() string {

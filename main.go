@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"fmt"
 	"io"
 	"log"
 	"os"
@@ -158,10 +157,11 @@ func helper(config *Config, items *[]Item) error {
 	}
 
 	item := (*items)[idx]
-	script := fmt.Sprintf(
-		"set -xeuo pipefail\n%v\n%v\n",
-		config.Modules.MkScript(), item.Module.Name,
-	)
+	script := strings.Join([]string{
+		"set -xeuo pipefail",
+		config.Modules.MkScript(),
+		item.Module.Name,
+	}, "\n")
 
 	cmd := exec.Command("bash")
 	cmd.Env = append(os.Environ(), "sel="+item.Line)
