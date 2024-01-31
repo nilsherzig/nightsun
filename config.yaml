@@ -2,7 +2,7 @@ modules:
   # clis
   - name: zoxide
     desc: A fast alternative to cd that learns your habits
-    producer: zoxide query --list
+    producer: sleep 1; zoxide query --list
     consumer:
       - mod: switch_workspace 0
       - cmd: tmux new-window -c "$1"

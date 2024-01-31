@@ -66,8 +66,6 @@ func (m *Module) Exec(config *Config, selection string) error {
 		} else if len(consumer.IsCmd) > 0 {
 			cmd := exec.Command("bash", "-c", consumer.IsCmd, "--", selection)
 			cmd.Env = append(os.Environ(), "sel="+selection)
-			cmd.Stdout = os.Stdout
-			cmd.Stderr = os.Stderr
 			log.Print(cmd.String())
 
 			if err := cmd.Run(); err != nil {

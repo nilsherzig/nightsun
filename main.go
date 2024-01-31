@@ -15,34 +15,63 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	var mut sync.RWMutex
+
+	wg := sync.WaitGroup{}
 	items := []Item{}
-	go func(itemptr *[]Item) {
-		for _, module := range config.Modules {
-			if len(module.Producer) > 0 {
-				cmd := exec.Command("bash", "-c", "set -euo pipefail;"+module.Producer)
-				out, err := cmd.Output()
-				if err != nil {
-					log.Print(errors.Wrapf(err, "%v: command failed", module.Producer))
-					continue
+	itemC := make(chan Item)
+
+	// collector
+	go func() {
+		for {
+			select {
+			case item, ok := <-itemC:
+				if !ok {
+					return
 				}
 
-				trimmed := strings.TrimSpace(string(out))
-				if len(trimmed) <= 0 {
-					continue
-				}
-
-				lines := strings.Split(trimmed, "\n")
-				log.Print(len(lines))
-				for _, line := range lines {
-					items = append(items, Item{
-						Module: module,
-						Line:   strings.ReplaceAll(line, "\t", "    "),
-					})
-				}
+				items = append(items, item)
 			}
 		}
-	}(&items)
+	}()
+
+	// stop collector when all producers are done
+	go func() {
+		wg.Wait()
+		close(itemC)
+	}()
+
+	for _, module := range config.Modules {
+		if len(module.Producer) <= 0 {
+			continue
+		}
+
+		wg.Add(1)
+		go func(module *Module) {
+			defer wg.Done()
+
+			cmd := exec.Command("bash", "-c", "set -euo pipefail;"+module.Producer)
+			out, err := cmd.Output()
+			if err != nil {
+				log.Print(errors.Wrapf(err, "%v: command failed", module.Producer))
+				return
+			}
+
+			trimmed := strings.TrimSpace(string(out))
+			if len(trimmed) <= 0 {
+				return
+			}
+
+			lines := strings.Split(trimmed, "\n")
+			for _, line := range lines {
+				itemC <- Item{
+					Module: module,
+					Line:   strings.ReplaceAll(line, "\t", "    "),
+				}
+			}
+		}(module)
+	}
+
+	var mut sync.RWMutex
 
 	idx, err := fuzzyfinder.Find(
 		&items,
