@@ -70,7 +70,7 @@ func main() {
 			if err != nil {
 				reportC <- Report{
 					Command: command,
-					Error:   errors.Wrapf(err, "%v: could not capture stderr", module.Producer).Error(),
+					Error:   errors.Wrap(err, "could not capture stderr").Error(),
 				}
 				return
 			}
@@ -83,7 +83,7 @@ func main() {
 				if err != nil {
 					reportC <- Report{
 						Command: command,
-						Error:   errors.Wrapf(err, "%v: could not read stderr", module.Producer).Error(),
+						Error:   errors.Wrap(err, "could not read stderr").Error(),
 					}
 					return
 				}
@@ -103,7 +103,7 @@ func main() {
 			if err != nil {
 				reportC <- Report{
 					Command: command,
-					Error:   errors.Wrapf(err, "%v: command failed", module.Producer).Error(),
+					Error:   errors.Wrap(err, "command failed").Error(),
 				}
 				return
 			}
