@@ -5,12 +5,9 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/charmbracelet/lipgloss"
 	"github.com/ktr0731/go-fuzzyfinder"
 	"github.com/pkg/errors"
 )
-
-var docStyle = lipgloss.NewStyle().Margin(1, 2)
 
 func main() {
 	config, err := parseConfig("config.yaml")
@@ -62,36 +59,4 @@ func main() {
 
 	log.Print(items[idx].Line)
 	log.Print(items[idx].Module.Show())
-
-	// m := Model{
-	// 	List: list.New(outputs.Items(), ItemDelegate{}, 0, 0),
-	// }
-
-	// p := tea.NewProgram(m)
-	// if _, err := p.Run(); err != nil {
-	// 	log.Fatal(errors.Wrap(err, "failed to start UI"))
-	// }
-
-	// items := []list.Item{}
-	// for _, module := range yamlConfig.Modules {
-	// 	// if len(module.Consumer) > 0 {
-	// 	// 	items = append(items, item{title: module.Name, desc: module.Consumer[0]})
-	// 	// 	continue
-	// 	// }
-	// 	// items = append(items, item{title: module.Name, desc: module.Description})
-	// 	items = append(items, item{
-	// 		title: module.Name,
-	// 		desc:  module.Desc,
-	// 	})
-	// }
-
-	// m := model{list: list.New(items, list.NewDefaultDelegate(), 0, 0)}
-	// m.list.Title = "unified-search"
-
-	// p := tea.NewProgram(m, tea.WithAltScreen())
-
-	// if _, err := p.Run(); err != nil {
-	// 	fmt.Println("Error running program:", err)
-	// 	os.Exit(1)
-	// }
 }
