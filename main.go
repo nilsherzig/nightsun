@@ -62,7 +62,7 @@ func main() {
 	}
 
 	item := items[idx]
-	for _, cmd := range item.Module.Consumer {
-		log.Print(cmd)
+	if err := item.Module.Exec(&config, item.Line); err != nil {
+		log.Fatal(err)
 	}
 }
