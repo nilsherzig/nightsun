@@ -26,7 +26,7 @@ func parseConfigFile(path string) (Config, error) {
 
 func parseConfig(filename string) (Config, error) {
 	possibleConfigPaths := []string{
-		filepath.Join(os.Getenv("HOME"), ".config", "unified-search", filename),
+		filepath.Join(os.Getenv("HOME"), ".config", "nightsun", filename),
 		filepath.Join(os.Getenv("HOME"), ".config", filename),
 		filepath.Join(os.Getenv("HOME"), filename),
 		filename,
