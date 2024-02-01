@@ -10,6 +10,7 @@ modules:
 
   - name: zoxide
     desc: A fast alternative to cd that learns your habits
+    prefix: "zoxide"
     producer: zoxide query --list
     consumer: |
       tmux new-window -c "$sel" -n $(basename "$sel") 
