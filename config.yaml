@@ -1,15 +1,23 @@
 modules:
   # clis
+  - name: tmux_sessions
+    desc: Switch to a tmux session
+    prefix: "tmux session"
+    producer: tmux list-sessions -F "#S"
+    consumer: |
+      tmux switch-client -t "$sel" -c /dev/pts/0 # TODO: add more logic to select the right tmux socket 
+      sel="tmux" focus_window_title
+
   - name: zoxide
     desc: A fast alternative to cd that learns your habits
     producer: zoxide query --list
     consumer: |
-      sel=0 switch_workspace
-      tmux new-window -c "$sel"
+      tmux new-window -c "$sel" -n $(basename "$sel") 
+      sel="tmux" focus_window_title
 
   - name: brotab
     desc: A CLI tool to interact with the browser tabs
-    prefix: "browser tab "
+    prefix: "browser tab"
     producer: brotab list
     consumer: |
       IFS=$'\t' read -r id title _ <<< "$sel"
@@ -19,7 +27,7 @@ modules:
   # workspace switching
   - name: switch_workspace_i3
     desc: Switch to a workspace by name in i3
-    prefix: "i3 workspace "
+    prefix: "i3 workspace"
     producer: i3-msg -t get_workspaces | jq -r '.[].name'
     consumer: |
       i3-msg workspace "$sel"
@@ -36,7 +44,7 @@ modules:
 
   # window focus by title
   - name: focus_window_title_i3
-    prefix: "i3 window "
+    prefix: "i3 window"
     desc: Focus a window by title in i3
     producer: |
       wmctrl -l \
@@ -45,8 +53,16 @@ modules:
     consumer: |
       wmctrl -a "$sel"
 
+  - name: focus_window_class_hyprland
+    desc: Focus a window by class in hyprland
+    prefix: "window"
+    producer: hyprctl clients -j | jq '.[] | "\(.class) \(.pid)"' | sed 's;";;g'
+    consumer: |
+      hyprctl dispatch focuswindow pid:"$(awk '{print $2}' <<< "$sel")"
+
   - name: focus_window_title_hyprland
     desc: Focus a window by title in hyprland
+    prefix: "window title"
     producer: hyprctl clients -j | jq '.[].title' | sed 's;";;g'
     consumer: |
       hyprctl dispatch focuswindow title:"$sel"

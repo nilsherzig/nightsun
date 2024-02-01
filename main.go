@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"log"
 	"os"
@@ -142,7 +143,10 @@ func helper(config *Config, items *[]Item) error {
 	idx, err := fuzzyfinder.Find(
 		items,
 		func(i int) string {
-			return (*items)[i].Module.Prefix + (*items)[i].Show
+			if (*items)[i].Module.Prefix == "" {
+				return (*items)[i].Show
+			}
+			return fmt.Sprintf("(%s) ", (*items)[i].Module.Prefix) + (*items)[i].Show
 		},
 		fuzzyfinder.WithPreviewWindow(func(i, width, height int) string {
 			if i < 0 || i >= len(*items) {
@@ -167,6 +171,7 @@ func helper(config *Config, items *[]Item) error {
 	cmd := exec.Command("bash")
 	cmd.Env = append(os.Environ(), "sel="+item.Line)
 	cmd.Stdin = bytes.NewReader([]byte(script))
+	log.Print(script)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
